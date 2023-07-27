@@ -3,9 +3,8 @@ package com.haiprj.games.scene;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.haiprj.games.base.Scene;
 
-public class UserControlScene extends Scene {
+public class UserControlScene {
     public SpriteBatch spriteBatch;
 
     private Texture texture;

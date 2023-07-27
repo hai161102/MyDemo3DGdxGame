@@ -4,17 +4,17 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
-import com.haiprj.games.base.BaseModel;
+import com.haiprj.gamebase.base.model.BaseModel;
+import com.haiprj.gamebase.utils.GameUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-import static com.haiprj.games.utils.Data.GAME_SIZE;
 
 public class MonsterModel extends BaseModel {
 
     private AnimationKey animationKey = AnimationKey.IDLE;
-    private float speed = 5 * GAME_SIZE;
+    private float speed = 5 * GameUtils.CONFIG_SIZE;
     private boolean isFront = false, isBack = false;
     public MonsterModel(String filename) {
         super(filename);
@@ -22,6 +22,11 @@ public class MonsterModel extends BaseModel {
             System.out.println(animation.id);
         }
         setAnimationKey(animationKey);
+    }
+
+    @Override
+    public void update(float v) {
+
     }
 
     public void setAnimationKey(final AnimationKey animationKey) {

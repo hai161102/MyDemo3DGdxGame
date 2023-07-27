@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
-import com.haiprj.games.base.BaseModel;
+import com.haiprj.gamebase.base.model.BaseModel;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,6 +20,12 @@ public class ActorModel extends BaseModel {
         super(filename);
         setAnimationKey(animationKey);
     }
+
+    @Override
+    public void update(float v) {
+
+    }
+
     public void setAnimationKey(final AnimationKey animationKey) {
         this.animationKey = animationKey;
         if (this.animationKey == AnimationKey.IDLE) {
@@ -31,7 +37,7 @@ public class ActorModel extends BaseModel {
             @Override
             public void onEnd(AnimationController.AnimationDesc animation) {
 //                if (animationKey == AnimationKey.WALKING) {
-//                    setPosition(getPosition().x, getPosition().y, getPosition().z + GAME_SIZE * 10);
+//                    setPosition(getPosition().x, getPosition().y, getPosition().z + GameUtils.CONFIG_SIZE * 10);
 //                }
                 if (animationKey == AnimationKey.WALKING) {
                     setAnimationKey(AnimationKey.STOP_WALKING);
@@ -60,7 +66,6 @@ public class ActorModel extends BaseModel {
     @Override
     public void update(float dt, ModelBatch modelBatch, Environment environment) {
         super.update(dt, modelBatch, environment);
-        System.out.println("Location: " + this.model.getAnimation(animationKey.getId()).nodeAnimations.get(0).node.translation.toString());
     }
 
     public void moveFront() {

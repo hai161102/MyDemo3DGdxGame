@@ -12,7 +12,6 @@ io.on('connection', function (socket) {
     socket.emit('USER_ID', {id: socket.id});
     socket.on('disconnect', function () {
         console.log('user disconnected');
-        server.close();
     });
 });
 

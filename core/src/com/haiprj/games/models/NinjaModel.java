@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.badlogic.gdx.math.Vector3;
-import com.haiprj.games.base.BaseModel;
+import com.haiprj.gamebase.base.model.BaseModel;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -75,6 +75,11 @@ public class NinjaModel extends BaseModel {
     @Override
     public void rotate(Vector3 rotateAxis, float degree) {
         super.rotate(rotateAxis, degree);
+
+    }
+
+    @Override
+    public void update(float v) {
 
     }
 

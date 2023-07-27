@@ -2,9 +2,9 @@ package com.haiprj.games;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.haiprj.games.base.BaseGame;
+import com.haiprj.gamebase.base.game.BaseGame;
 import com.haiprj.games.screens.MainScreen;
-import com.haiprj.games.utils.Data;
+import com.haiprj.games.socket.SocketInstance;
 
 public class Main extends BaseGame {
 
@@ -12,14 +12,24 @@ public class Main extends BaseGame {
 	@Override
 	public void create () {
 		super.create();
-		setScreen(new MainScreen());
+		SocketInstance.getInstance();
+		SocketInstance.getInstance().on("USER_ID", new SocketInstance.ActionEmitListener() {
+			@Override
+			public void onResult(Object... args) {
+
+			}
+		});
+		setCurrentScreen(new MainScreen(this));
 	}
 
 	@Override
 	public void render() {
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		Gdx.gl.glClearColor(Data.SKY_COLOR.x, Data.SKY_COLOR.y, Data.SKY_COLOR.z, 1);
 		super.render();
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		SocketInstance.getInstance().disconnect();
 	}
 }
