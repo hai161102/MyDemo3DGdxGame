@@ -1,5 +1,7 @@
 package com.haiprj.games.screens;
 
+import com.haiprj.gamebase.base.game.BaseGame;
+import com.haiprj.gamebase.base.screen.BaseScreen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
@@ -9,9 +11,6 @@ import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.haiprj.gamebase.base.game.BaseGame;
-import com.haiprj.gamebase.base.screen.BaseScreen;
-import com.haiprj.gamebase.utils.GameUtils;
 import com.haiprj.gamebase.utils.LightData;
 import com.haiprj.games.models.ActorModel;
 import com.haiprj.games.models.MonsterModel;
@@ -26,7 +25,6 @@ import static com.haiprj.gamebase.utils.GameUtils.CONFIG_SIZE;
 public class MainScreen extends BaseScreen {
 
     private final Environment environment;
-    private final PerspectiveCamera camera;
     private final CameraInputController cameraController;
     private final ModelBatch modelBatch;
     private final ActorModel ninjaModel;
@@ -36,21 +34,21 @@ public class MainScreen extends BaseScreen {
 
     public MainScreen(BaseGame game) {
         super(game);
+
         environment = new Environment();
         lightData = new LightData(
                 Gdx.graphics.getWidth(),
                 Gdx.graphics.getHeight(),
-                GameUtils.CONFIG_SIZE * Gdx.graphics.getWidth() / 10f,
-                GameUtils.CONFIG_SIZE * Gdx.graphics.getHeight() / 10f,
+                2,
+                2,
                 0.01f,
                 10000);
         modelBatch = new ModelBatch();
 
         // Create a perspective camera with some sensible defaults
-        camera = new PerspectiveCamera(67f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.position.set(0f * GameUtils.CONFIG_SIZE, 10f * GameUtils.CONFIG_SIZE, 50f * GameUtils.CONFIG_SIZE);
+        camera.position.set(0f * CONFIG_SIZE, 10f * CONFIG_SIZE, 50f * CONFIG_SIZE);
         camera.near = 0.01f;
-        camera.far = 1000f * GameUtils.CONFIG_SIZE;
+        camera.far = 1000f * CONFIG_SIZE;
         camera.update();
 
         lightData.setData(environment, camera);
@@ -60,24 +58,12 @@ public class MainScreen extends BaseScreen {
         ModelBuilder modelBuilder = new ModelBuilder();
         ninjaModel = new ActorModel("model/actor/actor_all.g3dj");
         Material material = new Material(ColorAttribute.createDiffuse(new Color(0, 0.8f, 0, 1)));
-        Model plane = modelBuilder.createBox(100 * GameUtils.CONFIG_SIZE, 10 * GameUtils.CONFIG_SIZE, 100 * GameUtils.CONFIG_SIZE, material, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        Model plane = modelBuilder.createBox(100 * CONFIG_SIZE, 10 * CONFIG_SIZE, 100 * CONFIG_SIZE, material, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         planeInstance = new ModelInstance(plane);
-        planeInstance.transform.translate(0, -5 * GameUtils.CONFIG_SIZE, 0);
+        planeInstance.transform.translate(0, -5 * CONFIG_SIZE, 0);
         cameraController = new CameraInputController(camera);
-//        InputMethodListener inputMethodListener = new InputMethodListener() {
-//            @Override
-//            public void inputMethodTextChanged(InputMethodEvent event) {
-//
-//            }
-//
-//            @Override
-//            public void caretPositionChanged(InputMethodEvent event) {
-//
-//            }
-//        };
-//
-//        cameraController.scrollFactor *= GameUtils.CONFIG_SIZE;
-//
+        cameraController.scrollFactor *= CONFIG_SIZE;
+
 //        Gdx.input.setInputProcessor(new InputProcessor() {
 //            @Override
 //            public boolean keyDown(int keycode) {
