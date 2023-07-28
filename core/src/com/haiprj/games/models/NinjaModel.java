@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public class NinjaModel extends BaseModel {
+public class NinjaModel extends CustomBaseModel {
 
     private AnimationKey animationKey = AnimationKey.WALK;
     public NinjaModel(String filename) {

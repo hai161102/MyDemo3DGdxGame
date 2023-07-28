@@ -3,6 +3,7 @@ package com.haiprj.games.models;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
 import com.haiprj.gamebase.base.model.BaseModel;
@@ -12,12 +13,28 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public class ActorModel extends BaseModel {
+public class ActorModel extends CustomBaseModel {
 
     private AnimationKey animationKey = AnimationKey.IDLE;
     private boolean canAction = true;
     public ActorModel(String filename) {
         super(filename);
+
+    }
+
+    public ActorModel(Model model) {
+        super(model);
+    }
+
+    public ActorModel(ModelInstance copyFrom) {
+        super(copyFrom);
+    }
+
+
+    @Override
+    protected void init() {
+        super.init();
+        animationKey = AnimationKey.IDLE;
         setAnimationKey(animationKey);
     }
 

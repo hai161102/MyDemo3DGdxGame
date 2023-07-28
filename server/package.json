@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "mydemo3d",
   "version": "1.0.0",
   "description": "v 100",

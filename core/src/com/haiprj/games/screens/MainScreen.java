@@ -1,6 +1,7 @@
 package com.haiprj.games.screens;
 
 import com.haiprj.gamebase.base.game.BaseGame;
+import com.haiprj.gamebase.base.model.BaseModel;
 import com.haiprj.gamebase.base.screen.BaseScreen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -12,12 +13,17 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.haiprj.gamebase.utils.LightData;
+import com.haiprj.games.Main;
 import com.haiprj.games.models.ActorModel;
+import com.haiprj.games.models.CustomBaseModel;
 import com.haiprj.games.models.MonsterModel;
+import com.haiprj.games.scene.CustomLight;
 import com.haiprj.games.scene.UserControlScene;
 
 import java.awt.event.InputMethodEvent;
 import java.awt.event.InputMethodListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.haiprj.gamebase.utils.GameUtils.CONFIG_SIZE;
 
@@ -27,16 +33,17 @@ public class MainScreen extends BaseScreen {
     private final Environment environment;
     private final CameraInputController cameraController;
     private final ModelBatch modelBatch;
-    private final ActorModel ninjaModel;
     private final ModelInstance planeInstance;
-    private final LightData lightData;
+    private final CustomLight lightData;
+    private final List<ActorModel> list = new ArrayList<>();
+    private ActorModel self;
     private UserControlScene userControlScene;
 
     public MainScreen(BaseGame game) {
         super(game);
 
         environment = new Environment();
-        lightData = new LightData(
+        lightData = new CustomLight(
                 Gdx.graphics.getWidth(),
                 Gdx.graphics.getHeight(),
                 2,
@@ -56,7 +63,6 @@ public class MainScreen extends BaseScreen {
 
         // Import and instantiate our model (called "myModel.g3dj")
         ModelBuilder modelBuilder = new ModelBuilder();
-        ninjaModel = new ActorModel("model/actor/actor_all.g3dj");
         Material material = new Material(ColorAttribute.createDiffuse(new Color(0, 0.8f, 0, 1)));
         Model plane = modelBuilder.createBox(100 * CONFIG_SIZE, 10 * CONFIG_SIZE, 100 * CONFIG_SIZE, material, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         planeInstance = new ModelInstance(plane);
@@ -137,6 +143,13 @@ public class MainScreen extends BaseScreen {
         Gdx.input.setInputProcessor(cameraController);
         this.userControlScene = new UserControlScene();
     }
+    public void add(ActorModel modelInstance) {
+        this.list.add(modelInstance);
+    }
+
+    public void addAll(List<ActorModel> actorModels) {
+        this.list.addAll(actorModels);
+    }
 
     @Override
     public void show() {
@@ -151,19 +164,16 @@ public class MainScreen extends BaseScreen {
     @Override
     public void render(float delta) {
         super.render(delta);
-        // Clear the stuff that is left over from the previous render cycle
 
-//        camera.position.set(ninjaModel.getPositionForCam());
         cameraController.update();
         camera.update();
+        lightData.updateLight(delta, planeInstance, list);
 
-        lightData.update(delta, planeInstance, ninjaModel);
-
-
-        // Let our ModelBatch take care of efficient rendering of our ModelInstance
         modelBatch.begin(camera);
         modelBatch.render(planeInstance, environment);
-        ninjaModel.update(delta, modelBatch, environment);
+        for (ActorModel actorModel : this.list) {
+            actorModel.update(delta, modelBatch, environment);
+        }
         modelBatch.end();
 
 //        userControlScene.update(delta);
@@ -173,6 +183,20 @@ public class MainScreen extends BaseScreen {
     public void dispose() {
         super.dispose();
         modelBatch.dispose();
-        ninjaModel.dispose();
+        for (ActorModel actorModel : this.list) {
+            actorModel.dispose();
+        }
+    }
+
+    public List<ActorModel> getList() {
+        return list;
+    }
+
+    public ActorModel getSelf() {
+        return self;
+    }
+
+    public void setSelf(ActorModel self) {
+        this.self = self;
     }
 }

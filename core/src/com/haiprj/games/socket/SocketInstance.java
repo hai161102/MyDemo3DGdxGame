@@ -4,8 +4,8 @@ import com.badlogic.gdx.Gdx;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+import org.json.JSONArray;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 public class SocketInstance {
@@ -20,12 +20,7 @@ public class SocketInstance {
         try {
             this.socket = IO.socket(URL_SOCKET);
             this.socket.connect();
-            this.emitter = this.socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Gdx.app.log("Create Emitter", "Success");
-                }
-            });
+            this.emitter = this.socket.on(Socket.EVENT_CONNECT, args -> Gdx.app.log("Create Emitter", "Success"));
         }catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -36,20 +31,22 @@ public class SocketInstance {
         return instance;
     }
 
-    public void on(String key, final ActionEmitListener callback){
+    public void onEmitter(String key, ActionEmitListener callback){
+        System.out.println(this.emitter);
         if (this.emitter != null) {
             try {
-                this.emitter.on(key, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... args) {
-                        Gdx.app.log("On call emitter", Arrays.toString(args));
-                        callback.onResult(args);
-                    }
+                this.emitter.on(key, args -> {
+                    System.out.println("Has result: " + args[0].toString());
+                    callback.onResult(args);
                 });
             }catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         }
+    }
+
+    public void on(String key, ActionEmitListener listener) {
+        this.socket.on(key, listener::onResult);
     }
 
     public void disconnect() {

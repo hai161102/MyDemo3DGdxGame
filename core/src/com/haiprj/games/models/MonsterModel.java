@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 
-public class MonsterModel extends BaseModel {
+public class MonsterModel extends CustomBaseModel {
 
     private AnimationKey animationKey = AnimationKey.IDLE;
     private float speed = 5 * GameUtils.CONFIG_SIZE;
