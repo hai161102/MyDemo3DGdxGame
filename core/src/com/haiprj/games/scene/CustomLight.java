@@ -1,39 +1,32 @@
 package com.haiprj.games.scene;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.math.Vector3;
 import com.haiprj.gamebase.utils.LightData;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class CustomLight extends LightData {
 
     public CustomLight(int shadowMapWidth, int shadowMapHeight, float shadowViewportWidth, float shadowViewportHeight, float shadowNear, float shadowFar) {
         super(shadowMapWidth, shadowMapHeight, shadowViewportWidth, shadowViewportHeight, shadowNear, shadowFar);
+        this.set(0.8f, 0.8f, 0.8f, -0.5f, -1f, -0.5f);
+        this.vector = Vector3.Zero;
+
+
     }
 
     @Override
     public void update(float dt, ModelInstance... data) {
         super.update(dt, data);
     }
-    public void updateLight(float dt, Object... data) {
-        final List<ModelInstance> listModel = new ArrayList<>();
-        for (Object datum : data) {
-            if (datum instanceof ModelInstance || datum instanceof List){
-                if (datum instanceof List) {
-                    //noinspection unchecked
-                    listModel.addAll((Collection<? extends ModelInstance>) datum);
-                }
-                else listModel.add((ModelInstance) datum);
-            }
 
-        }
-        ModelInstance[] d = new ModelInstance[listModel.size()];
-        for (ModelInstance modelInstance : listModel) {
-            d[listModel.indexOf(modelInstance)] = modelInstance;
-
-        }
-        this.update(dt, d);
+    public void updateLightShadow(float dt, Camera camera, Object... data) {
+        this.camera = camera;
+        this.updateLight(dt, data);
+    }
+    @Override
+    public void dispose() {
+        if (this.shadowBatch != null) this.shadowBatch.dispose();
+        super.dispose();
     }
 }

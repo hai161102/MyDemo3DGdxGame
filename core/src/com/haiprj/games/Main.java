@@ -1,93 +1,87 @@
 package com.haiprj.games;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.math.Vector3;
 import com.haiprj.gamebase.base.game.BaseGame;
-import com.haiprj.gamebase.base.screen.BaseScreen;
-import com.haiprj.gamebase.utils.loader.G3DJLoader;
-import com.haiprj.games.interfaces.LoadingListener;
+import com.haiprj.gamebase.utils.GameUtils;
+import com.haiprj.gamebase.utils.server.SocketConnectionUtil;
 import com.haiprj.games.models.ActorModel;
 import com.haiprj.games.screens.LoadingScreen;
 import com.haiprj.games.screens.MainScreen;
-import com.haiprj.games.socket.SocketInstance;
+import com.haiprj.games.server.ServerUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("VulnerableCodeUsages")
 public class Main extends BaseGame {
 
 	public static String myIDSocket = "";
 	public static final List<Model> listModel = new ArrayList<>();
-	private boolean isQueriedServer = false;
-	private boolean isLoadedModel = false;
-	@SuppressWarnings("VulnerableCodeUsages")
-	private JSONArray objects;
+
+	public Main() {
+	}
+
 	@Override
 	public void create () {
 		super.create();
-		SocketInstance.getInstance();
-		SocketInstance.getInstance().onEmitter("USER_ID", (args) -> {
-			myIDSocket = args[0].toString();
-		});
-		SocketInstance.getInstance().onEmitter("ADD_USERs", new SocketInstance.ActionEmitListener() {
-			@SuppressWarnings("VulnerableCodeUsages")
-			@Override
-			public void onResult(Object... args) {
-				try {
-					System.out.println("On ADD main: " + Arrays.toString(args));
-					objects = (JSONArray) args[0];
-					isQueriedServer = true;
-					loadView();
-				} catch (Exception e) {
-					System.err.println(e.getMessage());
+		setCurrentScreen(new LoadingScreen(this));
+		ServerUtil.getInstance().on(Const.USER_IN, args -> {
+			Main.myIDSocket = (String) args[0];
+			System.out.println(Main.myIDSocket);
+		}).on(Const.POSITION, args -> {
+			JSONObject object = (JSONObject) args[0];
+			try {
+				String id = object.getString("id");
+				if (!Objects.equals(id, myIDSocket)) {
+					for (ActorModel actorModel : ((MainScreen) this.currentScreen).getList()) {
+						if (Objects.equals(actorModel.getID(), id)) {
+							actorModel.setPosition(new Vector3(
+									Float.parseFloat(object.getJSONObject("position").getString("x")),
+									Float.parseFloat(object.getJSONObject("position").getString("y")),
+									Float.parseFloat(object.getJSONObject("position").getString("z"))
+							));
+							break;
+						}
+					}
 				}
 
+			} catch (JSONException ignored) {
+
 			}
-		});
-		SocketInstance.getInstance().on("ADD_USER", new SocketInstance.ActionEmitListener() {
-			@Override
-			public void onResult(Object... args) {
-				JSONObject jsonObject = (JSONObject) args[0];
-				if (Main.this.currentScreen instanceof MainScreen) {
-					addNewPlayer(jsonObject);
-				}
-			}
-		});
-		SocketInstance.getInstance().onEmitter("user-disconnect", (args) -> {
-			System.out.println("has disconnect");
-			String id = args[0].toString();
-			for (ActorModel actorModel : ((MainScreen) Main.this.currentScreen).getList()) {
-				if (Objects.equals(actorModel.getID(), id)){
-					((MainScreen) Main.this.currentScreen).getList().remove(actorModel);
+		}).on(Const.DISCONNECT, args -> {
+			String id = (String) args[0];
+			if (!Objects.equals(id, myIDSocket)) {
+				for (ActorModel actorModel : ((MainScreen) this.currentScreen).getList()) {
+					if (Objects.equals(actorModel.getID(), id)) ((MainScreen) this.currentScreen).getList().remove(actorModel);
 					return;
 				}
 			}
+		}).on(Const.ANOTHER_USER_IN, args -> {
+			Gdx.app.postRunnable(() -> {
+				addNewPlayer((JSONObject) args[0]);
+			});
+		}).on(Const.GET_USERs, args -> {
+			Gdx.app.postRunnable(() -> {
+				setCurrentScreen(new MainScreen(this));
+				JSONArray jsonArray = (JSONArray) args[0];
+				System.out.println("data: " + jsonArray);
+				for (int i = 0; i < jsonArray.length(); i++) {
+					try {
+						addNewPlayer(jsonArray.getJSONObject(i));
+					} catch (JSONException e) {
+						throw new RuntimeException(e);
+					}
+				}
+
+			});
 		});
-		setCurrentScreen(new LoadingScreen(this, (models) -> {
-			setCurrentScreen(new MainScreen(this));
-			System.out.println("List models: " + Arrays.toString(models));
-			listModel.addAll(Arrays.asList(models));
-			isLoadedModel = true;
-			loadView();
 
-		}));
-
-	}
-
-	private void loadView() {
-		if (!isLoadedModel || !isQueriedServer) return;
-		try {
-			for (int i = 0; i < objects.length(); i++) {
-				addNewPlayer(objects.getJSONObject(i));
-			}
-
-		}catch (Exception e) {
-			System.err.println("Error: " + e.getMessage());
-		}
-		isQueriedServer = false;
 	}
 
 	@SuppressWarnings("VulnerableCodeUsages")
@@ -95,6 +89,9 @@ public class Main extends BaseGame {
 		ActorModel actorModel = new ActorModel(listModel.get(0));
 		try {
 			actorModel.setID(object.getString("id"));
+			for (ActorModel model : ((MainScreen) Main.this.currentScreen).getList()) {
+				if (Objects.equals(model.getID(), actorModel.getID())) return;
+			}
 			Vector3 pos = new Vector3(
 					Float.parseFloat(object.getJSONObject("position").getString("x")),
 					Float.parseFloat(object.getJSONObject("position").getString("y")),
@@ -102,9 +99,6 @@ public class Main extends BaseGame {
 			);
 			actorModel.setPosition(pos);
 			((MainScreen) Main.this.currentScreen).add(actorModel);
-			if (Objects.equals(actorModel.getID(), myIDSocket)) {
-				((MainScreen) Main.this.currentScreen).setSelf(actorModel);
-			}
 		} catch (JSONException ignored) {
 		}
 
@@ -120,7 +114,7 @@ public class Main extends BaseGame {
 	public void dispose() {
 		super.dispose();
 		System.out.println("On dispose");
-		SocketInstance.getInstance().disconnect();
+		SocketConnectionUtil.getInstance().socket.disconnect();
 		System.exit(0);
 	}
 }

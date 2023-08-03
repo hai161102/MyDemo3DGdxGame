@@ -1,37 +1,36 @@
 package com.haiprj.games.screens;
 
-import com.haiprj.gamebase.base.game.BaseGame;
-import com.haiprj.gamebase.base.model.BaseModel;
-import com.haiprj.gamebase.base.screen.BaseScreen;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.haiprj.gamebase.utils.LightData;
+import com.badlogic.gdx.math.Vector3;
+import com.haiprj.gamebase.base.game.BaseGame;
+import com.haiprj.gamebase.base.screen.BaseScreen;
+import com.haiprj.games.Const;
 import com.haiprj.games.Main;
 import com.haiprj.games.models.ActorModel;
-import com.haiprj.games.models.CustomBaseModel;
-import com.haiprj.games.models.MonsterModel;
 import com.haiprj.games.scene.CustomLight;
+import com.haiprj.games.scene.CustomPointLight;
 import com.haiprj.games.scene.UserControlScene;
 
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
+import javax.swing.event.MouseInputListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.haiprj.gamebase.utils.GameUtils.CONFIG_SIZE;
 
 
-public class MainScreen extends BaseScreen {
+public class MainScreen extends BaseScreen implements InputProcessor, MouseInputListener {
 
     private final Environment environment;
-    private final CameraInputController cameraController;
     private final ModelBatch modelBatch;
     private final ModelInstance planeInstance;
     private final CustomLight lightData;
@@ -44,111 +43,48 @@ public class MainScreen extends BaseScreen {
 
         environment = new Environment();
         lightData = new CustomLight(
-                Gdx.graphics.getWidth(),
-                Gdx.graphics.getHeight(),
-                2,
-                2,
-                0.01f,
-                10000);
+                1024, 1024, Const.MAX_WORLD.x, Const.MAX_WORLD.z, 0.01f, 1000f);
         modelBatch = new ModelBatch();
 
         // Create a perspective camera with some sensible defaults
-        camera.position.set(0f * CONFIG_SIZE, 10f * CONFIG_SIZE, 50f * CONFIG_SIZE);
+        camera.position.set(0f, 32f * CONFIG_SIZE, 32f * CONFIG_SIZE);
         camera.near = 0.01f;
-        camera.far = 1000f * CONFIG_SIZE;
+        camera.far = 10000f * CONFIG_SIZE;
+        camera.rotate(Vector3.X, -45);
         camera.update();
 
         lightData.setData(environment, camera);
+//        environment.add(pointLight);
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
 
         // Import and instantiate our model (called "myModel.g3dj")
         ModelBuilder modelBuilder = new ModelBuilder();
         Material material = new Material(ColorAttribute.createDiffuse(new Color(0, 0.8f, 0, 1)));
-        Model plane = modelBuilder.createBox(100 * CONFIG_SIZE, 10 * CONFIG_SIZE, 100 * CONFIG_SIZE, material, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        Model plane = modelBuilder.createBox(Const.MAX_WORLD.x, 10 * CONFIG_SIZE, Const.MAX_WORLD.z, material, VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         planeInstance = new ModelInstance(plane);
         planeInstance.transform.translate(0, -5 * CONFIG_SIZE, 0);
-        cameraController = new CameraInputController(camera);
-        cameraController.scrollFactor *= CONFIG_SIZE;
-
-//        Gdx.input.setInputProcessor(new InputProcessor() {
-//            @Override
-//            public boolean keyDown(int keycode) {
-//                System.out.println(keycode);
-//                switch (keycode) {
-//                    case 66:
-//                        monsterModel.attack();
-//                        break;
-//                    case 8:
-//                        monsterModel.useSkill();
-//                        break;
-//                    case 19:
-//                        ninjaModel.moveFront();
-//                        break;
-//                    case 20:
-//                        monsterModel.moveBack();
-//                        break;
-//
-//                }
-//                cameraController.keyDown(keycode);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean keyUp(int keycode) {
-//                cameraController.keyUp(keycode);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean keyTyped(char character) {
-//                cameraController.keyTyped(character);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-//                cameraController.touchDown(screenX, screenY, pointer, button);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-//                cameraController.touchUp(screenX, screenY, pointer, button);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean touchDragged(int screenX, int screenY, int pointer) {
-//                cameraController.touchDragged(screenX, screenY, pointer);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean mouseMoved(int screenX, int screenY) {
-//                cameraController.mouseMoved(screenX, screenY);
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean scrolled(float amountX, float amountY) {
-////                cameraController.scrolled(amountX, amountY);
-//                return false;
-//            }
-//        });
-        Gdx.input.setInputProcessor(cameraController);
+        Gdx.input.setInputProcessor(this);
         this.userControlScene = new UserControlScene();
     }
     public void add(ActorModel modelInstance) {
         this.list.add(modelInstance);
+        for (ActorModel actorModel : this.list) {
+            if (Objects.equals(actorModel.getID(), Main.myIDSocket)) {
+                this.self = actorModel;
+
+                break;
+            }
+        }
     }
 
     public void addAll(List<ActorModel> actorModels) {
         this.list.addAll(actorModels);
+        for (ActorModel actorModel : this.list) {
+            if (Objects.equals(actorModel.getID(), Main.myIDSocket)) {
+                this.self = actorModel;
+                break;
+            }
+        }
     }
 
     @Override
@@ -164,8 +100,8 @@ public class MainScreen extends BaseScreen {
     @Override
     public void render(float delta) {
         super.render(delta);
-
-        cameraController.update();
+        onInput(delta);
+        camera.position.set(self.getPosition().x, camera.position.y, self.getPosition().z + 32f * CONFIG_SIZE);
         camera.update();
         lightData.updateLight(delta, planeInstance, list);
 
@@ -176,12 +112,27 @@ public class MainScreen extends BaseScreen {
         }
         modelBatch.end();
 
-//        userControlScene.update(delta);
+        userControlScene.update(delta);
+    }
+
+    private void onInput(float delta) {
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+            this.self.goFront(delta);
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) this.self.goBack(delta);
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            this.self.rotate(Vector3.Y, 1f);
+        }
+        else if(Gdx.input.isKeyPressed(Input.Keys.D)) {
+            this.self.rotate(Vector3.Y, -1f);
+        }
     }
 
     @Override
     public void dispose() {
         super.dispose();
+        this.lightData.dispose();
         modelBatch.dispose();
         for (ActorModel actorModel : this.list) {
             actorModel.dispose();
@@ -199,4 +150,83 @@ public class MainScreen extends BaseScreen {
     public void setSelf(ActorModel self) {
         this.self = self;
     }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        return false;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
+    }
+
 }

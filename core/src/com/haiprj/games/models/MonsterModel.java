@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
-import com.haiprj.gamebase.base.model.BaseModel;
 import com.haiprj.gamebase.utils.GameUtils;
 import org.jetbrains.annotations.Nullable;
 

@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Animation;
 import com.badlogic.gdx.graphics.g3d.utils.AnimationController;
-import com.haiprj.gamebase.base.model.BaseModel;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
+import com.haiprj.gamebase.utils.GameUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +38,7 @@ public class ActorModel extends CustomBaseModel {
         super.init();
         animationKey = AnimationKey.IDLE;
         setAnimationKey(animationKey);
+        this.speed = 0.1f;
     }
 
     @Override
@@ -45,10 +48,6 @@ public class ActorModel extends CustomBaseModel {
 
     public void setAnimationKey(final AnimationKey animationKey) {
         this.animationKey = animationKey;
-        if (this.animationKey == AnimationKey.IDLE) {
-            this.loopCount = 1000;
-        }
-        else this.loopCount = 1;
 
         setAnimation(Objects.requireNonNull(animationKey.getAnimation(this.model)), new AnimationController.AnimationListener() {
             @Override
@@ -56,14 +55,8 @@ public class ActorModel extends CustomBaseModel {
 //                if (animationKey == AnimationKey.WALKING) {
 //                    setPosition(getPosition().x, getPosition().y, getPosition().z + GameUtils.CONFIG_SIZE * 10);
 //                }
-                if (animationKey == AnimationKey.WALKING) {
-                    setAnimationKey(AnimationKey.STOP_WALKING);
-                    return;
-                }
 
-                if (animationKey != AnimationKey.IDLE) {
-                    setAnimationKey(AnimationKey.IDLE);
-                }
+                setAnimationKey(AnimationKey.IDLE);
                 canAction = true;
             }
             @Override
@@ -85,11 +78,15 @@ public class ActorModel extends CustomBaseModel {
         super.update(dt, modelBatch, environment);
     }
 
-    public void moveFront() {
+
+    @Override
+    public void goFront(float delta) {
         if (canAction) {
+            super.goFront(delta);
             setAnimationKey(AnimationKey.WALKING);
             canAction = false;
         }
+
     }
 
     public enum AnimationKey {
